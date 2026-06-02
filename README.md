@@ -41,3 +41,5 @@ npm run build    # 生产构建
 ## 设计文档
 
 详见 [`docs/superpowers/specs/2026-05-29-finance-impact-web-design.md`](docs/superpowers/specs/2026-05-29-finance-impact-web-design.md)。
+
+<!-- auto-deploy verified 2026-06-02 -->
