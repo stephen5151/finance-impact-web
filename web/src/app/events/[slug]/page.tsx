@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { events, getEvent, RISK_NOTE } from "@/data/events";
-import { PathFlow } from "@/components/PathFlow";
+import { ReasoningRoadmap } from "@/components/ReasoningRoadmap";
 
 export function generateStaticParams() {
   return events.map((e) => ({ slug: e.slug }));
@@ -122,7 +122,7 @@ export default async function EventPage({
         </Block>
 
         <Block step={4} title="它会怎样一步步传导到普通人的生活">
-          <PathFlow steps={d.transmissionPath} />
+          <ReasoningRoadmap title={event.title} steps={d.transmissionPath} />
         </Block>
 
         <Block step={5} title="对年轻人的重点影响">
