@@ -2,8 +2,15 @@ import { events } from "@/data/events";
 import { EventCard } from "@/components/EventCard";
 import { AskBox } from "@/components/AskBox";
 import { Disclaimer } from "@/components/Disclaimer";
+import { LatestNews } from "@/components/LatestNews";
+import { getNewsFeed } from "@/lib/news-store";
 
-export default function Home() {
+// 每小时重新读取一次动态新闻（实际更新频率由 cron 决定）
+export const revalidate = 3600;
+
+export default async function Home() {
+  const feed = await getNewsFeed();
+
   return (
     <div className="mx-auto max-w-5xl px-5">
       {/* Hero 区 */}
@@ -34,6 +41,9 @@ export default function Home() {
         </h2>
         <AskBox />
       </section>
+
+      {/* 最新动态区（自动抓取，未配置或无数据时不渲染） */}
+      <LatestNews items={feed.items} updatedAt={feed.updatedAt} />
 
       {/* 最近事件区 */}
       <section id="events" className="mt-20 scroll-mt-20">
