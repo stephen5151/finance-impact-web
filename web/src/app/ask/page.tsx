@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { answerQuestion } from "@/data/ask";
+import { answerQuestionSmart } from "@/data/ask-llm";
 import { AskBox } from "@/components/AskBox";
 import { AnswerCard } from "@/components/AnswerCard";
 import { Disclaimer } from "@/components/Disclaimer";
@@ -18,7 +19,10 @@ export default async function AskPage({
 }) {
   const { q } = await searchParams;
   const question = (q ?? "").trim();
-  const answer = question ? answerQuestion(question) : null;
+  // 混合：优先用模型做语义匹配（配置了 API key 时），失败/未配置则降级到关键词匹配。
+  const answer = question
+    ? (await answerQuestionSmart(question)) ?? answerQuestion(question)
+    : null;
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-10">

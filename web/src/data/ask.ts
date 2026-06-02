@@ -114,6 +114,43 @@ function scoreEvent(event: FinanceEvent, q: string): number {
   return score;
 }
 
+/**
+ * 用「命中的事件 + 生活维度」组装结构化回答。
+ * 结论、传导路径、影响人群等均取自审核过的静态内容，
+ * 因此无论是关键词匹配还是模型匹配，最终输出都落在可信内容边界内。
+ * 供 V1 关键词匹配与 V2 模型匹配（见 ask-llm.ts）共用。
+ */
+export function buildAnswer(
+  question: string,
+  matchedEvents: FinanceEvent[],
+  dimensions: LifeDimension[],
+): AskAnswer | null {
+  const primary = matchedEvents[0];
+  if (!primary) return null;
+
+  const dims = dimensions.length > 0 ? dimensions : primary.dimensions.slice(0, 4);
+
+  const byDimension = dims
+    .map((dim) => {
+      const text = DIMENSION_TEXT[primary.slug]?.[dim];
+      return text ? { dimension: dim, text } : null;
+    })
+    .filter((x): x is { dimension: LifeDimension; text: string } => x !== null);
+
+  return {
+    question,
+    matchedEvents,
+    dimensions: dims,
+    directAnswer: primary.conclusion,
+    path: primary.detail.transmissionPath,
+    byDimension,
+    whoAffected: primary.detail.mostAffected,
+    signals: [...primary.detail.shortTerm, ...primary.detail.midTerm.slice(0, 1)],
+    riskNote: RISK_NOTE,
+  };
+}
+
+/** V1：纯关键词匹配。也是 V2 模型不可用时的降级路径。 */
 export function answerQuestion(question: string): AskAnswer | null {
   const q = question.trim().toLowerCase();
   if (!q) return null;
@@ -138,30 +175,7 @@ export function answerQuestion(question: string): AskAnswer | null {
   }
 
   const matchedEvents = ranked.slice(0, 2).map((x) => x.e);
-  const primary = matchedEvents[0];
-
-  // 生活维度：优先用问题里识别到的；识别不到则用主事件默认维度
-  const dimensions =
-    detected.length > 0 ? detected : primary.dimensions.slice(0, 4);
-
-  const byDimension = dimensions
-    .map((dim) => {
-      const text = DIMENSION_TEXT[primary.slug]?.[dim];
-      return text ? { dimension: dim, text } : null;
-    })
-    .filter((x): x is { dimension: LifeDimension; text: string } => x !== null);
-
-  return {
-    question,
-    matchedEvents,
-    dimensions,
-    directAnswer: primary.conclusion,
-    path: primary.detail.transmissionPath,
-    byDimension,
-    whoAffected: primary.detail.mostAffected,
-    signals: [...primary.detail.shortTerm, ...primary.detail.midTerm.slice(0, 1)],
-    riskNote: RISK_NOTE,
-  };
+  return buildAnswer(question, matchedEvents, detected);
 }
 
 // 首页展示的问题示例
