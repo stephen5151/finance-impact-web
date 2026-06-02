@@ -16,10 +16,13 @@ html {
   scroll-behavior: smooth;
 }
 
-/* 手绘风格（excalidraw 风）字体：拉丁/数字用 Caveat，中文用 Zhi Mang Xing */
+/* 手绘风格（excalidraw 风）字体：
+   首选 Apple 系统「手札体-简」(Hannotate SC)，Apple 设备本地直出、无需下载；
+   非 Apple 设备回退到 Caveat（拉丁）/ Zhi Mang Xing（中文）等手写体。 */
 .font-sketch {
-  font-family: "Caveat", "Zhi Mang Xing", var(--font-geist-sans), "PingFang SC",
-    "Microsoft YaHei", cursive, sans-serif;
+  font-family: "Hannotate SC", "HannotateSC", "Hannotate TC", "Caveat",
+    "Zhi Mang Xing", var(--font-geist-sans), "PingFang SC", "Microsoft YaHei",
+    cursive, sans-serif;
 }
 
 body {
