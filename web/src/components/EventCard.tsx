@@ -2,6 +2,16 @@ import Link from "next/link";
 import { FinanceEvent } from "@/data/events";
 import { SketchyBox } from "./SketchyBox";
 
+// 从原文链接取出来源网站域名（去掉 www.），用于在卡片上标明信息来源的网站。
+function sourceHost(url?: string): string {
+  if (!url) return "";
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
 // 由 slug 生成稳定随机种子，让每张卡片的手绘描边各有差异但刷新不抖动。
 function seedFromSlug(slug: string): number {
   let s = 0;
@@ -55,6 +65,9 @@ export function EventCard({ event }: { event: FinanceEvent }) {
           {event.sourceName && (
             <p className="mt-3 border-t border-stone-100 pt-2.5 text-xs text-stone-400">
               信息来源 · {event.sourceName}
+              {sourceHost(event.sourceUrl) && (
+                <span className="text-stone-300"> · {sourceHost(event.sourceUrl)}</span>
+              )}
             </p>
           )}
         </div>
