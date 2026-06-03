@@ -58,6 +58,10 @@ export interface FinanceEvent {
   keywords: string[];
   /** 该事件主要关联的生活维度 */
   dimensions: LifeDimension[];
+  /** 来源名称（仅自动生成的事件有，静态事件无） */
+  sourceName?: string;
+  /** 原文链接（仅自动生成的事件有） */
+  sourceUrl?: string;
 }
 
 const RISK_NOTE =

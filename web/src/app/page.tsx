@@ -1,16 +1,16 @@
-import { events } from "@/data/events";
 import { EventCard } from "@/components/EventCard";
 import { AskBox } from "@/components/AskBox";
 import { Disclaimer } from "@/components/Disclaimer";
 import { LatestNews } from "@/components/LatestNews";
-import { SketchUnderline } from "@/components/SketchUnderline";
 import { getNewsFeed } from "@/lib/news-store";
+import { getDisplayEvents } from "@/data/events-live";
 
-// 每小时重新读取一次动态新闻（实际更新频率由 cron 决定）
+// 每小时重新读取一次动态内容（实际更新频率由 cron 决定）
 export const revalidate = 3600;
 
 export default async function Home() {
   const feed = await getNewsFeed();
+  const { events, live, updatedAt } = await getDisplayEvents();
 
   return (
     <div className="mx-auto max-w-5xl px-5">
@@ -25,9 +25,7 @@ export default async function Home() {
           推演它会怎样
           <span className="relative inline-block">
             影响你的生活
-            <span className="absolute -bottom-2 left-0 w-full">
-              <SketchUnderline />
-            </span>
+            <span className="absolute -bottom-1.5 left-0 h-[3px] w-full rounded-full bg-stone-900" />
           </span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-stone-600 sm:text-lg">
@@ -58,7 +56,14 @@ export default async function Home() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight">最近事件</h2>
             <p className="mt-1 text-sm text-stone-500">
-              最近一两个月值得关注的政治经济事件，点开看完整推演。
+              {live
+                ? "根据可信来源最新动态自动生成的推演，点开看完整分析。"
+                : "最近一两个月值得关注的政治经济事件，点开看完整推演。"}
+              {live && updatedAt && (
+                <span className="ml-1 text-stone-400">
+                  更新于 {new Date(updatedAt).toLocaleDateString("zh-CN")}
+                </span>
+              )}
             </p>
           </div>
         </div>
