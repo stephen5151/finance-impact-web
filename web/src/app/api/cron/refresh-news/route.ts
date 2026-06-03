@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { refreshNews } from "@/lib/news-pipeline";
+import { refreshEvents } from "@/lib/events-pipeline";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -17,13 +18,17 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const result = await refreshNews();
-  if (!result.ok) {
-    return NextResponse.json({ ok: false, reason: result.reason }, { status: 200 });
-  }
+  // 同一次定时任务里同时刷新「完整推演事件」和「最新动态」。
+  // 事件是重点，优先生成。
+  const eventsResult = await refreshEvents();
+  const newsResult = await refreshNews();
+
   return NextResponse.json({
-    ok: true,
-    updatedAt: result.feed.updatedAt,
-    count: result.feed.items.length,
+    events: eventsResult.ok
+      ? { ok: true, updatedAt: eventsResult.feed.updatedAt, count: eventsResult.feed.events.length }
+      : { ok: false, reason: eventsResult.reason },
+    news: newsResult.ok
+      ? { ok: true, updatedAt: newsResult.feed.updatedAt, count: newsResult.feed.items.length }
+      : { ok: false, reason: newsResult.reason },
   });
 }

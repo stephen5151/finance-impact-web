@@ -4,9 +4,31 @@
 // 手绘方框（SketchyBox）+ 手绘向下箭头 + 手写体字体，纸张质感背景。
 // 与 ReasoningRoadmap（规整风格）数据一致，可在事件详情页二选一。
 
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import { SketchyBox } from "./SketchyBox";
+
+// 当元素滚动进入视口时返回 true（只触发一次），用于驱动「逐环画出来」的入场动效。
+function useRevealOnce<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || shown) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shown]);
+  return { ref, shown };
+}
 
 type NodeKind = "origin" | "step" | "dest";
 
@@ -72,8 +94,15 @@ export function ReasoningRoadmapSketch({
     },
   ];
 
+  const { ref, shown } = useRevealOnce<HTMLDivElement>();
+
   return (
-    <div className="rounded-2xl border border-stone-200 bg-[#fffef9] p-4 sm:p-6">
+    <div
+      ref={ref}
+      className={`rounded-2xl border border-stone-200 bg-[#fffef9] p-4 sm:p-6 ${
+        shown ? "reveal-on" : ""
+      }`}
+    >
       <p className="font-sketch mb-4 text-center text-xl text-stone-500">
         从事件出发，一环扣一环，看它如何一步步影响到你 ✎
       </p>
@@ -81,28 +110,39 @@ export function ReasoningRoadmapSketch({
         {nodes.map((node, i) => {
           const s = STYLE[node.kind];
           const isLast = i === nodes.length - 1;
+          // 逐环错峰入场：每个节点 + 其后的箭头共用一个序号的 delay。
+          const delay = `${i * 140}ms`;
           return (
             <Fragment key={i}>
-              <SketchyBox
-                stroke={s.stroke}
-                fill={s.fill}
-                fillStyle={s.fillStyle}
-                seed={i * 13 + 3}
-              >
-                <div className="px-5 py-3.5">
-                  <span className={`font-sketch text-base ${s.badge}`}>
-                    {node.kind === "origin"
-                      ? "★ 起点"
-                      : node.kind === "dest"
-                        ? "🙋 你（落点）"
-                        : node.badge}
-                  </span>
-                  <p className="font-sketch mt-0.5 text-xl leading-snug text-stone-800">
-                    {node.text}
-                  </p>
+              <div className="reveal-step" style={{ transitionDelay: delay }}>
+                <SketchyBox
+                  stroke={s.stroke}
+                  fill={s.fill}
+                  fillStyle={s.fillStyle}
+                  seed={i * 13 + 3}
+                >
+                  <div className="px-5 py-3.5">
+                    <span className={`font-sketch text-base ${s.badge}`}>
+                      {node.kind === "origin"
+                        ? "★ 起点"
+                        : node.kind === "dest"
+                          ? "🙋 你（落点）"
+                          : node.badge}
+                    </span>
+                    <p className="font-sketch mt-0.5 text-xl leading-snug text-stone-800">
+                      {node.text}
+                    </p>
+                  </div>
+                </SketchyBox>
+              </div>
+              {!isLast && (
+                <div
+                  className="reveal-step"
+                  style={{ transitionDelay: `calc(${delay} + 70ms)` }}
+                >
+                  <SketchyArrow />
                 </div>
-              </SketchyBox>
-              {!isLast && <SketchyArrow />}
+              )}
             </Fragment>
           );
         })}

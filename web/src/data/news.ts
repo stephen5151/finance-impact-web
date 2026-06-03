@@ -2,7 +2,7 @@
 // 这部分内容由定时任务自动抓取 + 模型加工生成（见 src/lib/news-pipeline.ts），
 // 与人工审核的结构化事件（events.ts）分开维护、分开展示。
 
-import { ImpactDirection, LifeDimension } from "./events";
+import { FinanceEvent, ImpactDirection, LifeDimension } from "./events";
 
 /** 经模型加工后的一条「最新动态」 */
 export interface LatestNewsItem {
@@ -30,6 +30,12 @@ export interface LatestNewsItem {
 export interface NewsFeed {
   updatedAt: string;
   items: LatestNewsItem[];
+}
+
+/** 由真实新闻自动生成的「完整推演事件」整批数据。 */
+export interface EventsFeed {
+  updatedAt: string;
+  events: FinanceEvent[];
 }
 
 /**

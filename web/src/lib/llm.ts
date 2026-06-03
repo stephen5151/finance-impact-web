@@ -43,6 +43,8 @@ export interface ChatOptions {
   json?: boolean;
   /** 超时毫秒，默认 12s */
   timeoutMs?: number;
+  /** 最大输出 token，默认 1024。生成长内容（如完整推演）时调大。 */
+  maxTokens?: number;
 }
 
 /** 调用模型，返回纯文本。未配置 key 或失败时抛错，由调用方降级。 */
@@ -66,7 +68,7 @@ export async function chat(opts: ChatOptions): Promise<string> {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 1024,
+          max_tokens: opts.maxTokens ?? 1024,
           system: opts.system,
           messages: [{ role: "user", content: opts.user }],
         }),
@@ -86,6 +88,7 @@ export async function chat(opts: ChatOptions): Promise<string> {
       },
       body: JSON.stringify({
         model,
+        max_tokens: opts.maxTokens ?? 1024,
         messages: [
           { role: "system", content: opts.system },
           { role: "user", content: opts.user },

@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { events, getEvent, RISK_NOTE } from "@/data/events";
+import { events, RISK_NOTE } from "@/data/events";
+import { getDisplayEvent } from "@/data/events-live";
 import { ReasoningRoadmapSketch } from "@/components/ReasoningRoadmapSketch";
+
+// 静态样例事件在构建时预生成；动态生成的事件按需渲染（ISR）。
+export const revalidate = 3600;
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return events.map((e) => ({ slug: e.slug }));
@@ -14,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const event = getEvent(slug);
+  const event = await getDisplayEvent(slug);
   if (!event) return { title: "事件未找到" };
   return {
     title: `${event.title} | 事件影响推演`,
@@ -66,7 +71,7 @@ export default async function EventPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const event = getEvent(slug);
+  const event = await getDisplayEvent(slug);
   if (!event) notFound();
 
   const d = event.detail;
@@ -96,6 +101,19 @@ export default async function EventPage({
         <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight">
           {event.title}
         </h1>
+        {event.sourceUrl && (
+          <p className="mt-2 text-xs text-stone-400">
+            来源：
+            <a
+              href={event.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-stone-700"
+            >
+              {event.sourceName ?? "查看原文"}
+            </a>
+          </p>
+        )}
         <div className="mt-5 rounded-2xl bg-stone-900 px-6 py-5 text-stone-50">
           <p className="text-xs text-stone-400">一句话结论</p>
           <p className="mt-1.5 text-base font-medium leading-relaxed">
