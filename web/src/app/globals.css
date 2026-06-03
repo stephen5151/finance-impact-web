@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf9;
+  /* 暖色演算纸底色，去掉纯白的「素」，呼应手札体笔记本主题 */
+  --background: #f7f3e8;
   --foreground: #1c1917;
 }
 
@@ -16,18 +17,103 @@ html {
   scroll-behavior: smooth;
 }
 
-/* 手绘风格（excalidraw 风）字体：
-   首选 Apple 系统「手札体-简」(Hannotate SC)，Apple 设备本地直出、无需下载；
-   非 Apple 设备回退到 Caveat（拉丁）/ Zhi Mang Xing（中文）等手写体。 */
-.font-sketch {
-  font-family: "Hannotate SC", "HannotateSC", "Hannotate TC", "Caveat",
-    "Zhi Mang Xing", var(--font-geist-sans), "PingFang SC", "Microsoft YaHei",
-    cursive, sans-serif;
+/* 「逐环画出来」的入场动效：默认每一环先隐藏并下移，
+   父级加上 .reveal-on 后依次淡入上浮（错峰 delay 在组件里用内联 style 控制）。 */
+.reveal-step {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal-on .reveal-step {
+  opacity: 1;
+  transform: none;
 }
 
+/* 背景手绘涂鸦的缓慢漂浮：幅度很小、节奏很慢，只做点缀不抢正文。 */
+@keyframes doodle-float-a {
+  0% {
+    transform: translate(0, 0) rotate(var(--rot, 0deg));
+  }
+  100% {
+    transform: translate(14px, -22px) rotate(calc(var(--rot, 0deg) + 4deg));
+  }
+}
+@keyframes doodle-float-b {
+  0% {
+    transform: translate(0, 0) rotate(var(--rot, 0deg));
+  }
+  100% {
+    transform: translate(-18px, 16px) rotate(calc(var(--rot, 0deg) - 5deg));
+  }
+}
+@keyframes doodle-fade {
+  0%,
+  100% {
+    opacity: var(--o-min, 0.05);
+  }
+  50% {
+    opacity: var(--o-max, 0.1);
+  }
+}
+
+.doodle {
+  position: absolute;
+  animation: doodle-float-a var(--dur, 26s) ease-in-out infinite alternate,
+    doodle-fade var(--fdur, 14s) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.doodle-b {
+  animation: doodle-float-b var(--dur, 30s) ease-in-out infinite alternate,
+    doodle-fade var(--fdur, 16s) ease-in-out infinite;
+}
+
+/* 尊重用户的「减少动态效果」系统设置：直接显示，不做动画。 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal-step {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .doodle,
+  .doodle-b {
+    animation: none;
+  }
+}
+
+/* 手绘风格（excalidraw 风）字体：全站主题字体。
+   首选 Apple 系统「手札体-简」(Hannotate SC)，Apple 设备本地直出、无需下载；
+   非 Apple 设备回退到 Caveat（拉丁）/ Zhi Mang Xing（中文）等手写体。
+   注意 cursive 必须放在中文回退「楷体 KaiTi / 楷体_GB2312」之后，
+   否则非 Apple 设备会落到系统 cursive，中文显示不可控。 */
+.font-sketch,
 body {
-  background: var(--background);
+  font-family: "Hannotate SC", "HannotateSC", "Hannotate TC", "Caveat",
+    "Zhi Mang Xing", "KaiTi", "STKaiti", "楷体", var(--font-geist-sans),
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 演算纸 / 白板背景：极淡点阵，固定在最底层，呼应全站手绘推演风。
+   透明度很低（~5%），不影响正文可读性与对比度。 */
+body {
   color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont,
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background-color: var(--background);
+  /* 方格纸（演算纸）质感：暖色细方格 + 轻微暗角，让背景不再素白。
+     三层叠加：① 边缘暗角 ② 横线 ③ 竖线。 */
+  background-image: radial-gradient(
+      ellipse at 50% 40%,
+      transparent 58%,
+      rgba(92, 74, 38, 0.06) 100%
+    ),
+    linear-gradient(rgba(92, 74, 38, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92, 74, 38, 0.06) 1px, transparent 1px);
+  background-size: 100% 100%, 26px 26px, 26px 26px;
+  background-position: center, center, center;
+  background-attachment: fixed;
+  /* 手写体偏小，略增大字号与行距以保证可读性 */
+  font-size: 1.02rem;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
 }

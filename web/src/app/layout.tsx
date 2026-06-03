@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { BackgroundDecor } from "@/components/BackgroundDecor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-stone-50 text-stone-900">
+      <body className="min-h-full flex flex-col text-stone-900">
+        <BackgroundDecor />
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
