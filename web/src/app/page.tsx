@@ -1,4 +1,5 @@
 import { EventCard } from "@/components/EventCard";
+import { RawEventCard } from "@/components/RawEventCard";
 import { AskBox } from "@/components/AskBox";
 import { Disclaimer } from "@/components/Disclaimer";
 import { LatestNews } from "@/components/LatestNews";
@@ -10,7 +11,7 @@ export const revalidate = 3600;
 
 export default async function Home() {
   const feed = await getNewsFeed();
-  const { events, live, updatedAt } = await getDisplayEvents();
+  const display = await getDisplayEvents();
 
   return (
     <div className="mx-auto max-w-5xl px-5">
@@ -50,28 +51,53 @@ export default async function Home() {
       {/* 最新动态区（自动抓取，未配置或无数据时不渲染） */}
       <LatestNews items={feed.items} updatedAt={feed.updatedAt} />
 
-      {/* 最近事件区 */}
+      {/* 最近事件区：只展示「有据可查、可追溯到来源网站」的真实事件 */}
       <section id="events" className="mt-20 scroll-mt-20">
         <div className="mb-6 flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">最近事件</h2>
             <p className="mt-1 text-sm text-stone-500">
-              {live
-                ? "根据可信来源最新动态自动生成的推演，点开看完整分析。"
-                : "最近一两个月值得关注的政治经济事件，点开看完整推演。"}
-              {live && updatedAt && (
+              {display.kind === "full" &&
+                "根据可信来源最新动态自动生成的推演，点开看完整分析。"}
+              {display.kind === "raw" &&
+                "来自可信来源的最新真实新闻，点开可直达原文核对。"}
+              {display.kind === "empty" &&
+                "正在抓取可信来源的最新事件，稍后再来看看。"}
+              {display.kind !== "empty" && display.updatedAt && (
                 <span className="ml-1 text-stone-400">
-                  更新于 {new Date(updatedAt).toLocaleDateString("zh-CN")}
+                  更新于 {new Date(display.updatedAt).toLocaleDateString("zh-CN")}
                 </span>
               )}
             </p>
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
-            <EventCard key={event.slug} event={event} />
-          ))}
-        </div>
+
+        {display.kind === "full" && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {display.events.map((event) => (
+              <EventCard key={event.slug} event={event} />
+            ))}
+          </div>
+        )}
+
+        {display.kind === "raw" && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {display.rawItems.map((item) => (
+              <RawEventCard key={item.link} item={item} />
+            ))}
+          </div>
+        )}
+
+        {display.kind === "empty" && (
+          <div className="rounded-2xl border border-dashed border-stone-300 bg-white/60 px-6 py-12 text-center">
+            <p className="text-sm text-stone-500">
+              暂时没有可追溯来源的真实事件。
+            </p>
+            <p className="mt-1 text-xs text-stone-400">
+              本站只展示能点开核对来源的真实事件，不用占位假数据。
+            </p>
+          </div>
+        )}
       </section>
 
       {/* 适用对象说明 */}

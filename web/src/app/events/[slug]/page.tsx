@@ -5,6 +5,16 @@ import { events, RISK_NOTE } from "@/data/events";
 import { getDisplayEvent } from "@/data/events-live";
 import { ReasoningRoadmapSketch } from "@/components/ReasoningRoadmapSketch";
 
+// 从原文链接取出来源网站域名（去掉 www.），用于在页首标明信息来源的网站地址。
+function sourceHost(url?: string): string {
+  if (!url) return "";
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
 // 静态样例事件在构建时预生成；动态生成的事件按需渲染（ISR）。
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -105,14 +115,17 @@ export default async function EventPage({
         </h1>
         {event.sourceUrl && (
           <p className="mt-2 text-xs text-stone-400">
-            来源：
+            信息来源：
+            {event.sourceName && (
+              <span className="text-stone-500">{event.sourceName} · </span>
+            )}
             <a
               href={event.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-stone-700"
             >
-              {event.sourceName ?? "查看原文"}
+              {sourceHost(event.sourceUrl) || "查看原文"}
             </a>
           </p>
         )}

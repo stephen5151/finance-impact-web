@@ -40,8 +40,22 @@ function getFeeds(): string[] {
 
 const parser = new XMLParser({ ignoreAttributes: false });
 
+// 常见 HTML 实体解码：RSS 原文会带 &#39; &amp; 这类实体，
+// 现在原始条目会被直接展示给用户，需解码成可读字符。
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&");
+}
+
 function stripHtml(s: string): string {
-  return s.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  return decodeEntities(s.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
 }
 
 async function fetchOneFeed(url: string): Promise<RawNewsItem[]> {
