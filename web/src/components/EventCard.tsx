@@ -52,6 +52,11 @@ export function EventCard({ event }: { event: FinanceEvent }) {
               </span>
             ))}
           </div>
+          {event.sourceName && (
+            <p className="mt-3 border-t border-stone-100 pt-2.5 text-xs text-stone-400">
+              信息来源 · {event.sourceName}
+            </p>
+          )}
         </div>
       </SketchyBox>
     </Link>
