@@ -78,15 +78,17 @@ export default async function EventPage({
 
   return (
     <article className="mx-auto max-w-3xl px-5 py-10">
-      <Link
-        href="/#events"
-        className="text-sm text-stone-500 transition-colors hover:text-stone-900"
-      >
-        ← 返回最近事件
-      </Link>
+      {/* 正文整体放在一张白色「纸」上，浮在演算纸背景之上 */}
+      <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-9">
+        <Link
+          href="/#events"
+          className="text-sm text-stone-500 transition-colors hover:text-stone-900"
+        >
+          ← 返回最近事件
+        </Link>
 
-      {/* 头部 + 一句话结论 */}
-      <header className="mt-5">
+        {/* 头部 + 一句话结论 */}
+        <header className="mt-5">
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-stone-400">{event.date}</span>
           {event.directions.map((dir) => (
@@ -168,9 +170,10 @@ export default async function EventPage({
             {RISK_NOTE}本网站仅用于信息理解与生活影响分析，不构成投资建议。投资需谨慎。
           </p>
         </Block>
+        </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-stone-200 bg-white p-5 text-center">
+      <div className="mt-6 rounded-2xl border border-stone-200 bg-white p-5 text-center">
         <p className="text-sm text-stone-600">想知道它具体会怎么影响你？</p>
         <Link
           href="/ask"

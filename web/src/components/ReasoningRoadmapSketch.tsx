@@ -99,7 +99,7 @@ export function ReasoningRoadmapSketch({
   return (
     <div
       ref={ref}
-      className={`rounded-2xl border border-stone-200 bg-[#fffef9] p-4 sm:p-6 ${
+      className={`rounded-2xl border border-stone-200 bg-[#fdfaf2] p-4 sm:p-6 ${
         shown ? "reveal-on" : ""
       }`}
     >
