@@ -44,6 +44,7 @@ export interface EventsFeed {
  * key 是用于匹配 feed host 或来源名的关键片段，value 是对外展示的来源名。
  */
 export const TRUSTED_SOURCES: { match: string; name: string }[] = [
+  // 中文
   { match: "gov.cn", name: "中国政府网" },
   { match: "stats.gov.cn", name: "国家统计局" },
   { match: "pbc.gov.cn", name: "中国人民银行" },
@@ -53,8 +54,17 @@ export const TRUSTED_SOURCES: { match: string; name: string }[] = [
   { match: "yicai.com", name: "第一财经" },
   { match: "caixin.com", name: "财新网" },
   { match: "eastmoney.com", name: "东方财富" },
-  { match: "reuters.com", name: "路透" },
   { match: "ftchinese.com", name: "FT中文网" },
+  { match: "wallstreetcn", name: "华尔街见闻" },
+  { match: "36kr", name: "36氪" },
+  // 英文权威（模型会翻译/改写成中文）
+  { match: "federalreserve", name: "美联储" },
+  { match: "bbc", name: "BBC" },
+  { match: "theguardian", name: "《卫报》" },
+  { match: "nytimes", name: "《纽约时报》" },
+  { match: "cnbc", name: "CNBC" },
+  { match: "marketwatch", name: "MarketWatch" },
+  { match: "reuters", name: "路透" },
 ];
 
 /** 判断某个链接/来源是否在可信源白名单内；命中返回展示名，否则 null。 */

@@ -18,11 +18,16 @@ export interface RawNewsItem {
   source: string;
 }
 
-// 默认 RSS 源（可信源白名单内、相对稳定的几个）。
-// 线上可用 NEWS_FEEDS 覆盖，按需增减。
+// 默认 RSS 源：经实测「能直连 + 当天更新 + 命中可信源白名单」的几个。
+// 英文源由模型在生成阶段翻译改写成中文。线上可用 NEWS_FEEDS 覆盖，按需增减。
 const DEFAULT_FEEDS = [
-  "https://www.ftchinese.com/rss/feed",
-  "http://www.people.com.cn/rss/finance.xml",
+  // 英文权威
+  "https://www.federalreserve.gov/feeds/press_all.xml", // 美联储官方新闻稿
+  "http://feeds.bbci.co.uk/news/business/rss.xml", // BBC Business
+  "https://www.theguardian.com/uk/business/rss", // 卫报 Business
+  "https://www.cnbc.com/id/20910258/device/rss/rss.html", // CNBC Economy
+  // 中文（更新活跃）
+  "https://dedicated.wallstreetcn.com/rss.xml", // 华尔街见闻
 ];
 
 function getFeeds(): string[] {
