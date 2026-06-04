@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Zhi_Mang_Xing, Caveat } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -8,6 +8,22 @@ import { BackgroundDecor } from "@/components/BackgroundDecor";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+// 手写体（手札体）由 next/font 在构建时打包、经本站域名分发，
+// 不再依赖会被墙的 fonts.googleapis.com，保证 Android / Windows / 移动端也能显示。
+// 中文手写体（毛笔手写风），覆盖没有系统手写字体的设备
+const zhiMangXing = Zhi_Mang_Xing({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-hand-cn",
+  display: "swap",
+});
+// 拉丁手写体
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-hand-en",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -22,21 +38,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" className={`${geistSans.variable} h-full antialiased`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        {/* 根布局里的 <link> 在 App Router 下对全站生效；该规则是 pages router 的遗留告警 */}
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Zhi+Mang+Xing&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="zh-CN"
+      className={`${geistSans.variable} ${zhiMangXing.variable} ${caveat.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col text-stone-900">
         <BackgroundDecor />
         <SiteHeader />
