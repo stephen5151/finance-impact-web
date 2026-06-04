@@ -51,18 +51,24 @@ export function AnswerCard({ answer }: { answer: AskAnswer }) {
 
       {answer.byDimension.length > 0 && (
         <Section title="按生活维度展开">
-          <ul className="space-y-3">
+          <div className="grid gap-2.5">
             {answer.byDimension.map((b) => (
-              <li key={b.dimension} className="flex gap-3">
-                <span className="mt-0.5 shrink-0 rounded-md bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
-                  {b.dimension}
-                </span>
-                <span className="text-sm leading-relaxed text-stone-700">
+              <div
+                key={b.dimension}
+                className="rounded-xl border border-stone-100 bg-stone-50/70 p-3.5"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="h-3.5 w-1 rounded-full bg-stone-900" />
+                  <span className="text-sm font-semibold tracking-tight text-stone-900">
+                    {b.dimension}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-sm leading-relaxed text-stone-600">
                   {b.text}
-                </span>
-              </li>
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </Section>
       )}
 
