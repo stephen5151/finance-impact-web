@@ -45,6 +45,11 @@ export interface ChatOptions {
   timeoutMs?: number;
   /** 最大输出 token，默认 1024。生成长内容（如完整推演）时调大。 */
   maxTokens?: number;
+  /**
+   * 采样温度。不传则用服务方默认（通常约 1，带随机性）。
+   * 分类/匹配类任务（如把问题映射到固定事件）应传 0，保证同一问题每次结果一致。
+   */
+  temperature?: number;
 }
 
 /** 调用模型，返回纯文本。未配置 key 或失败时抛错，由调用方降级。 */
@@ -71,6 +76,7 @@ export async function chat(opts: ChatOptions): Promise<string> {
           max_tokens: opts.maxTokens ?? 1024,
           system: opts.system,
           messages: [{ role: "user", content: opts.user }],
+          ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
         }),
         signal: controller.signal,
       });
@@ -93,6 +99,7 @@ export async function chat(opts: ChatOptions): Promise<string> {
           { role: "system", content: opts.system },
           { role: "user", content: opts.user },
         ],
+        ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
         ...(opts.json ? { response_format: { type: "json_object" } } : {}),
       }),
       signal: controller.signal,

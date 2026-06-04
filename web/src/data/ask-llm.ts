@@ -63,6 +63,9 @@ export async function answerQuestionSmart(
     result = await chatJSON<MatchResult>({
       system: buildSystemPrompt(),
       user: q,
+      // 温度 0：匹配是分类任务，必须确定性——同一个问题每次都返回相同事件，
+      // 避免用户多点几次「看影响」得到不同答案。
+      temperature: 0,
     });
   } catch {
     // 任何失败都降级，不让用户看到报错
