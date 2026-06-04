@@ -48,15 +48,24 @@ function buildSystemPrompt(): string {
 }
 
 /**
- * V2 入口：用模型做语义匹配，再用静态内容组装回答。
- * 返回 null 表示「该走降级」（未配置 key、调用失败、或模型判定无相关事件）。
+ * V2 匹配结果（三态）：
+ * - answer：模型匹配到相关事件，已用静态内容组装好回答
+ * - no-match：模型可用且已运行，但判定没有相关事件 → 应直接显示「无法识别」，
+ *   不要再走关键词降级（否则关键词噪声会把无关问题硬塞给某个事件，答非所问）
+ * - unavailable：未配置 key 或调用失败 → 调用方可降级到关键词匹配
  */
+export type SmartResult =
+  | { kind: "answer"; answer: AskAnswer }
+  | { kind: "no-match" }
+  | { kind: "unavailable" };
+
+/** V2 入口：用模型做语义匹配，再用静态内容组装回答。 */
 export async function answerQuestionSmart(
   question: string,
-): Promise<AskAnswer | null> {
-  if (!isLLMConfigured()) return null;
+): Promise<SmartResult> {
+  if (!isLLMConfigured()) return { kind: "unavailable" };
   const q = question.trim();
-  if (!q) return null;
+  if (!q) return { kind: "unavailable" };
 
   let result: MatchResult;
   try {
@@ -68,8 +77,8 @@ export async function answerQuestionSmart(
       temperature: 0,
     });
   } catch {
-    // 任何失败都降级，不让用户看到报错
-    return null;
+    // 调用失败：当作不可用，交给关键词降级
+    return { kind: "unavailable" };
   }
 
   const slugs = Array.isArray(result?.slugs) ? result.slugs : [];
@@ -78,11 +87,13 @@ export async function answerQuestionSmart(
     .filter((e): e is FinanceEvent => Boolean(e))
     .slice(0, 2);
 
-  if (matchedEvents.length === 0) return null;
+  // 模型明确判定无相关事件：直接 no-match，不降级（避免给无关问题硬凑答案）
+  if (matchedEvents.length === 0) return { kind: "no-match" };
 
   // 只保留合法维度，防止模型造词
   const dimensions = (Array.isArray(result?.dimensions) ? result.dimensions : [])
     .filter((d): d is LifeDimension => ALL_DIMENSIONS.includes(d as LifeDimension));
 
-  return buildAnswer(question, matchedEvents, dimensions);
+  const answer = buildAnswer(question, matchedEvents, dimensions);
+  return answer ? { kind: "answer", answer } : { kind: "no-match" };
 }

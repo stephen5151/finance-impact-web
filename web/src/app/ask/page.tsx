@@ -19,10 +19,17 @@ export default async function AskPage({
 }) {
   const { q } = await searchParams;
   const question = (q ?? "").trim();
-  // 混合：优先用模型做语义匹配（配置了 API key 时），失败/未配置则降级到关键词匹配。
-  const answer = question
-    ? (await answerQuestionSmart(question)) ?? answerQuestion(question)
-    : null;
+  // 混合匹配：优先用模型做语义匹配。
+  // - 模型匹配到事件 → 用该回答
+  // - 模型可用但判定无相关事件（no-match）→ 不降级，直接显示「无法识别」
+  // - 模型未配置 / 调用失败（unavailable）→ 降级到关键词匹配
+  let answer = null;
+  if (question) {
+    const smart = await answerQuestionSmart(question);
+    if (smart.kind === "answer") answer = smart.answer;
+    else if (smart.kind === "unavailable") answer = answerQuestion(question);
+    // no-match：answer 保持 null → 走下方「无法识别」空状态
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-10">

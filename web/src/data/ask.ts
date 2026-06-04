@@ -104,12 +104,12 @@ const DIMENSION_TEXT: Record<string, Partial<Record<LifeDimension, string>>> = {
 
 function scoreEvent(event: FinanceEvent, q: string): number {
   let score = 0;
+  // 仅按「关键词命中」打分。之前用「标题单字命中 +0.05」做加权，
+  // 但中文里「不/我/的」这类常用字会和几乎任何问题撞上，导致无关问题
+  // （甚至「我家猫不吃饭」）也被误判成命中某个财经事件 → 给出离谱答案。
+  // 去掉该噪声项，只有真正出现事件关键词才算相关。
   for (const kw of event.keywords) {
     if (q.includes(kw)) score += 3;
-  }
-  // 标题里的词也算一点相关度
-  for (const ch of event.title) {
-    if (ch.trim() && q.includes(ch)) score += 0.05;
   }
   return score;
 }
