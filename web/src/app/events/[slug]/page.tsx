@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { events, RISK_NOTE } from "@/data/events";
+import { RISK_NOTE } from "@/data/events";
 import { getDisplayEvent } from "@/data/events-live";
 import { ReasoningRoadmapSketch } from "@/components/ReasoningRoadmapSketch";
 
@@ -15,13 +15,10 @@ function sourceHost(url?: string): string {
   }
 }
 
-// 静态样例事件在构建时预生成；动态生成的事件按需渲染（ISR）。
-export const revalidate = 3600;
-export const dynamicParams = true;
-
-export function generateStaticParams() {
-  return events.map((e) => ({ slug: e.slug }));
-}
+// 事件详情按需动态渲染：数据来自 Blob 的 no-store 读取（始终取最新一版），
+// 与 generateStaticParams 的静态预渲染不兼容（会触发 static-to-dynamic 报错），
+// 故整页强制动态渲染。详情页流量低，动态渲染开销可接受。
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
