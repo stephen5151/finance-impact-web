@@ -152,7 +152,11 @@ export default async function EventPage({
         </Block>
 
         <Block step={4} title="它会怎样一步步传导到普通人的生活">
-          <ReasoningRoadmapSketch title={event.title} steps={d.transmissionPath} />
+          <ReasoningRoadmapSketch
+            title={event.title}
+            steps={d.transmissionPath}
+            dimensions={event.dimensions}
+          />
         </Block>
 
         <Block step={5} title="对年轻人的重点影响">

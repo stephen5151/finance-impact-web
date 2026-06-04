@@ -7,6 +7,27 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import { SketchyBox } from "./SketchyBox";
+import type { LifeDimension } from "@/data/events";
+
+// 各生活维度在「最终落点」里的措辞
+const LANDING_LABEL: Record<LifeDimension, string> = {
+  找工作: "找工作",
+  工资收入: "工资收入",
+  租房成本: "租房成本",
+  日常消费: "日常消费",
+  存钱现金流: "存钱和现金流",
+  理财认知: "理财选择",
+};
+
+// 根据事件实际涉及的生活维度，生成「最终落点」文案；不同事件不再千篇一律。
+function buildDestText(dimensions?: LifeDimension[]): string {
+  const dims = (dimensions ?? []).filter((d) => LANDING_LABEL[d]);
+  if (dims.length === 0) {
+    return "最终一步步传导到你的日常生活";
+  }
+  const labels = dims.map((d) => LANDING_LABEL[d]);
+  return `最终更可能影响到你的${labels.join("、")}`;
+}
 
 // 当元素滚动进入视口时返回 true（只触发一次），用于驱动「逐环画出来」的入场动效。
 function useRevealOnce<T extends HTMLElement>() {
@@ -76,9 +97,12 @@ const STYLE: Record<
 export function ReasoningRoadmapSketch({
   title,
   steps,
+  dimensions,
 }: {
   title: string;
   steps: string[];
+  /** 事件实际涉及的生活维度，用于生成「最终落点」文案 */
+  dimensions?: LifeDimension[];
 }) {
   const nodes: FlowNode[] = [
     { kind: "origin", badge: "起点", text: title },
@@ -89,8 +113,8 @@ export function ReasoningRoadmapSketch({
     })),
     {
       kind: "dest",
-      badge: "落点",
-      text: "最终传导到你的找工作、工资、租房、消费和存钱",
+      badge: "最终落点",
+      text: buildDestText(dimensions),
     },
   ];
 
@@ -126,7 +150,7 @@ export function ReasoningRoadmapSketch({
                       {node.kind === "origin"
                         ? "★ 起点"
                         : node.kind === "dest"
-                          ? "🙋 你（落点）"
+                          ? "★ 最终落点"
                           : node.badge}
                     </span>
                     <p className="font-sketch mt-0.5 text-xl leading-snug text-stone-800">
