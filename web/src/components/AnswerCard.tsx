@@ -38,6 +38,11 @@ export function AnswerCard({ answer }: { answer: AskAnswer }) {
             </span>
           ))}
         </div>
+        {answer.grounded === false && (
+          <p className="mt-3 rounded-lg bg-stone-800 px-3 py-2 text-xs leading-relaxed text-stone-300">
+            ⚠️ 本回答基于一般经济常识推演，未对应当前可追溯的具体新闻事件，仅供理解参考。
+          </p>
+        )}
       </div>
 
       <Section title="影响路径">

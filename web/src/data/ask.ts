@@ -23,6 +23,12 @@ export interface AskAnswer {
   signals: string[];
   /** 风险提示 */
   riskNote: string;
+  /**
+   * 该回答是否基于「真实可追溯事件」。
+   * true（默认）：基于目录里的真实事件，matchedEvents 可点开核对来源。
+   * false：目录里没有对应事件，由模型用一般经济常识组织的推演，无具体来源。
+   */
+  grounded?: boolean;
 }
 
 const DIMENSION_KEYWORDS: Record<LifeDimension, string[]> = {
