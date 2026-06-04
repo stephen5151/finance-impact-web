@@ -88,17 +88,15 @@ html {
    非 Apple 设备回退到 Caveat（拉丁）/ Zhi Mang Xing（中文）等手写体。
    注意 cursive 必须放在中文回退「楷体 KaiTi / 楷体_GB2312」之后，
    否则非 Apple 设备会落到系统 cursive，中文显示不可控。 */
-/* 手札体字体栈（跨平台）：
-   1. Apple 设备优先用系统自带「手札体-简」(Hannotate SC)，本地直出、最快；
-   2. 其它平台（Android / Windows / 部分 iPhone）用 next/font 自托管的手写体
-      （--font-hand-cn 中文毛笔手写 + --font-hand-en 拉丁手写），经本站域名分发，
-      不受 google 域名被墙影响；
-   3. 再回退到 Windows 楷体 / 系统中文，最后才是无衬线。 */
+/* 手札体字体栈（全平台统一）：
+   1. 首选自托管的「霞鹜文楷 Lite」（工整、可读的手写/楷风），同源切片分发，
+      Android / Windows / iOS / Mac 一致显示，不依赖会被墙的 google 域名；
+   2. 回退到 Apple 系统手札体 / Windows 楷体 / 系统中文，最后才是无衬线。 */
 .font-sketch,
 body {
-  font-family: "Hannotate SC", "HannotateSC", "Hannotate TC",
-    var(--font-hand-cn), var(--font-hand-en), "KaiTi", "STKaiti", "楷体",
-    var(--font-geist-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: "LXGW WenKai Lite", "Hannotate SC", "HannotateSC",
+    "Hannotate TC", "KaiTi", "STKaiti", "楷体", var(--font-geist-sans),
+    "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 /* 演算纸 / 白板背景：极淡点阵，固定在最底层，呼应全站手绘推演风。
