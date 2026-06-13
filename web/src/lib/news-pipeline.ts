@@ -91,7 +91,9 @@ export async function refreshNews(): Promise<
           publishedAt: r.publishedAt,
         })),
       ),
-      timeoutMs: 30_000,
+      // 默认 1024 太小，8 条新闻 JSON 会被截断导致解析失败；给足额度。
+      maxTokens: 4000,
+      timeoutMs: 60_000,
     });
   } catch (e) {
     return { ok: false, reason: `模型加工失败：${(e as Error).message}` };
