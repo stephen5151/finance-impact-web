@@ -124,6 +124,10 @@ export async function refreshNews(): Promise<
     .slice(0, 8);
 
   const feed: NewsFeed = { updatedAt: new Date().toISOString(), items };
-  await saveNewsFeed(feed);
+  try {
+    await saveNewsFeed(feed);
+  } catch (e) {
+    return { ok: false, reason: `写入存储失败：${(e as Error).message}` };
+  }
   return { ok: true, feed };
 }

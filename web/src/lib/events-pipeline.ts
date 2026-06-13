@@ -210,6 +210,11 @@ export async function refreshEvents(): Promise<
     return { ok: false, reason: "模型未产出符合质量要求的事件" };
 
   const feed: EventsFeed = { updatedAt: new Date().toISOString(), events };
-  await saveEventsFeed(feed);
+  try {
+    await saveEventsFeed(feed);
+  } catch (e) {
+    // 例如 Blob 存储被暂停（账户计费未激活）等，返回清晰原因而非 500
+    return { ok: false, reason: `写入存储失败：${(e as Error).message}` };
+  }
   return { ok: true, feed };
 }
