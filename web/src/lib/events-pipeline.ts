@@ -189,7 +189,7 @@ export async function refreshEvents(): Promise<
         })),
       ),
       maxTokens: 8000,
-      timeoutMs: 55_000,
+      timeoutMs: 150_000,
     });
   } catch (e) {
     return { ok: false, reason: `模型生成失败：${(e as Error).message}` };

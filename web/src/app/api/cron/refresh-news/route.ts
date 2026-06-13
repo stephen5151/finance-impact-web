@@ -7,7 +7,9 @@ import { refreshNews } from "@/lib/news-pipeline";
 import { refreshEvents } from "@/lib/events-pipeline";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// 一次请求里要跑两次 LLM（生成完整推演事件 + 最新动态），耗时较长。
+// Vercel 现在所有计划默认上限 300s，给足时间避免 504。
+export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
