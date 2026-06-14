@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FinanceEvent } from "@/data/events";
 import { SketchyBox } from "./SketchyBox";
+import { ui, dirLabel, type Lang } from "@/i18n/dict";
 
 // 从原文链接取出来源网站域名（去掉 www.），用于在卡片上标明信息来源的网站。
 function sourceHost(url?: string): string {
@@ -19,7 +20,13 @@ function seedFromSlug(slug: string): number {
   return s;
 }
 
-export function EventCard({ event }: { event: FinanceEvent }) {
+export function EventCard({
+  event,
+  lang = "zh",
+}: {
+  event: FinanceEvent;
+  lang?: Lang;
+}) {
   return (
     <Link
       href={`/events/${event.slug}`}
@@ -50,7 +57,7 @@ export function EventCard({ event }: { event: FinanceEvent }) {
                 key={d}
                 className="rounded-full bg-stone-900 px-2.5 py-1 text-sm text-stone-50"
               >
-                {d}
+                {dirLabel(d, lang)}
               </span>
             ))}
             {event.audiences.slice(0, 2).map((a) => (
@@ -64,7 +71,8 @@ export function EventCard({ event }: { event: FinanceEvent }) {
           </div>
           {event.sourceName && (
             <p className="mt-3 border-t border-stone-100 pt-2.5 text-xs text-stone-400">
-              信息来源 · {event.sourceName}
+              {ui[lang].card.source}
+              {event.sourceName}
               {sourceHost(event.sourceUrl) && (
                 <span className="text-stone-300"> · {sourceHost(event.sourceUrl)}</span>
               )}

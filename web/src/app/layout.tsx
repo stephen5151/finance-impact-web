@@ -4,25 +4,33 @@ import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { BackgroundDecor } from "@/components/BackgroundDecor";
+import { getLang } from "@/i18n/lang";
+import { ui } from "@/i18n/dict";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "事件影响推演 | 看懂大事，推演它会怎样影响你的生活",
-  description:
-    "把最近的政治经济事件，翻译成普通人能理解的生活影响推演。不是教你炒股，而是帮你理解未来可能发生什么。本网站仅用于信息理解与生活影响分析，不构成投资建议。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  return {
+    title: ui[lang].meta.homeTitle,
+    description: ui[lang].meta.homeDesc,
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = await getLang();
   return (
-    <html lang="zh-CN" className={`${geistSans.variable} h-full antialiased`}>
+    <html
+      lang={lang === "en" ? "en" : "zh-CN"}
+      className={`${geistSans.variable} h-full antialiased`}
+    >
       <head>
         {/* 手札体「霞鹜文楷 Lite」：自托管在本站 /public，切片按需加载，
             同源分发，不依赖会被墙的 google 域名，Android / Windows / iOS 统一显示。 */}

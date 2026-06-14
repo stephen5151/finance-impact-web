@@ -1,4 +1,5 @@
 import { LatestNewsItem } from "@/data/news";
+import { ui, dirLabel, dimLabel, type Lang } from "@/i18n/dict";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -8,7 +9,7 @@ function formatDate(iso: string): string {
   ).padStart(2, "0")}`;
 }
 
-function NewsCard({ item }: { item: LatestNewsItem }) {
+function NewsCard({ item, lang }: { item: LatestNewsItem; lang: Lang }) {
   return (
     <a
       href={item.sourceUrl}
@@ -28,7 +29,8 @@ function NewsCard({ item }: { item: LatestNewsItem }) {
       <p className="mt-2 text-sm leading-relaxed text-stone-600">{item.summary}</p>
       {item.whyRelevant && (
         <p className="mt-2 rounded-lg bg-stone-50 px-3 py-2 text-xs leading-relaxed text-stone-500">
-          和你的关系：{item.whyRelevant}
+          {ui[lang].latest.relation}
+          {item.whyRelevant}
         </p>
       )}
       <div className="mt-3 flex flex-wrap gap-1.5">
@@ -37,7 +39,7 @@ function NewsCard({ item }: { item: LatestNewsItem }) {
             key={d}
             className="rounded-full bg-stone-900 px-2.5 py-1 text-xs text-stone-50"
           >
-            {d}
+            {dirLabel(d, lang)}
           </span>
         ))}
         {item.dimensions.map((d) => (
@@ -45,7 +47,7 @@ function NewsCard({ item }: { item: LatestNewsItem }) {
             key={d}
             className="rounded-full border border-stone-200 px-2.5 py-1 text-xs text-stone-500"
           >
-            {d}
+            {dimLabel(d, lang)}
           </span>
         ))}
       </div>
@@ -56,27 +58,30 @@ function NewsCard({ item }: { item: LatestNewsItem }) {
 export function LatestNews({
   items,
   updatedAt,
+  lang = "zh",
 }: {
   items: LatestNewsItem[];
   updatedAt: string;
+  lang?: Lang;
 }) {
   // 没有动态数据时整块不渲染（未配置或还没首次抓取）
   if (items.length === 0) return null;
 
+  const t = ui[lang].latest;
   return (
     <section id="latest" className="mt-20 scroll-mt-20">
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">最新动态</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t.heading}</h2>
           <p className="mt-1 text-sm text-stone-500">
-            自动抓取可信来源的最新时政财经动态，并标注它和你生活的关系。
-            {updatedAt && `更新于 ${formatDate(updatedAt)}`}
+            {t.desc}
+            {updatedAt && `${t.updatedAt}${formatDate(updatedAt)}`}
           </p>
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
-          <NewsCard key={item.id} item={item} />
+          <NewsCard key={item.id} item={item} lang={lang} />
         ))}
       </div>
     </section>

@@ -1,5 +1,6 @@
 import type { RawNewsItem } from "@/lib/news-sources";
 import { SketchyBox } from "./SketchyBox";
+import { ui, type Lang } from "@/i18n/dict";
 
 // 由链接生成稳定随机种子，让每张卡片的手绘描边各有差异但刷新不抖动。
 function seedFromLink(link: string): number {
@@ -27,7 +28,13 @@ function formatDate(raw: string): string {
 
 // 直接来自 RSS 的真实新闻卡片：没有 LLM 推演分析，但带真实来源网站，
 // 整卡片点开即跳转原文，让用户能核对事件真伪。
-export function RawEventCard({ item }: { item: RawNewsItem }) {
+export function RawEventCard({
+  item,
+  lang = "zh",
+}: {
+  item: RawNewsItem;
+  lang?: Lang;
+}) {
   const host = sourceHost(item.link);
   return (
     <a
@@ -61,7 +68,8 @@ export function RawEventCard({ item }: { item: RawNewsItem }) {
             </p>
           )}
           <p className="mt-4 border-t border-stone-100 pt-2.5 text-xs text-stone-400">
-            信息来源 · {item.source}
+            {ui[lang].card.source}
+            {item.source}
             {host && <span className="text-stone-300"> · {host}</span>}
           </p>
         </div>
