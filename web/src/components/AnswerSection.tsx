@@ -18,17 +18,15 @@ export async function AnswerSection({
   lang?: Lang;
 }) {
   const t = ui[lang].ask;
-  // 混合匹配：优先用模型做语义匹配。
-  // - 模型匹配到事件 → 用该回答（已按所选语言生成，只翻译命中事件标题）
+  // 混合匹配：优先用模型做语义匹配。回答统一用中文生成，英文展示时整卡走
+  // localizeAnswer 翻译（含命中事件标题），保证中英不混排、缓存生效。
+  // - 模型匹配到事件 → 用该回答
   // - 模型可用但判定无相关事件（no-match）→ 不降级，直接显示「无法识别」
-  // - 模型未配置 / 调用失败（unavailable）→ 降级到关键词匹配（再整卡翻译）
+  // - 模型未配置 / 调用失败（unavailable）→ 降级到关键词匹配
   let answer = null;
-  const smart = await answerQuestionSmart(question, lang);
+  const smart = await answerQuestionSmart(question);
   if (smart.kind === "answer") {
-    answer = {
-      ...smart.answer,
-      matchedEvents: await localizeEventTitles(smart.answer.matchedEvents, lang),
-    };
+    answer = await localizeAnswer(smart.answer, lang);
   } else if (smart.kind === "unavailable") {
     const fallback = answerQuestion(question);
     answer = fallback ? await localizeAnswer(fallback, lang) : null;
