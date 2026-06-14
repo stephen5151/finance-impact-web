@@ -84,10 +84,15 @@ export default async function EventPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const event = await getDisplayEvent(slug);
-  if (!event) notFound();
+  const lang = await getLang();
+  const raw = await getDisplayEvent(slug);
+  if (!raw) notFound();
+  const event = await localizeEvent(raw, lang);
 
   const d = event.detail;
+  const t = ui[lang].event;
+  const riskNote =
+    lang === "en" ? (await translateBatch([RISK_NOTE]))[0] : RISK_NOTE;
 
   return (
     <article className="mx-auto max-w-3xl px-5 py-10">
@@ -97,7 +102,7 @@ export default async function EventPage({
           href="/#events"
           className="text-sm text-stone-500 transition-colors hover:text-stone-900"
         >
-          ← 返回最近事件
+          {t.back}
         </Link>
 
         {/* 头部 + 一句话结论 */}
@@ -109,7 +114,7 @@ export default async function EventPage({
               key={dir}
               className="rounded-full bg-stone-900 px-2.5 py-1 text-stone-50"
             >
-              {dir}
+              {dirLabel(dir, lang)}
             </span>
           ))}
         </div>
@@ -118,7 +123,7 @@ export default async function EventPage({
         </h1>
         {event.sourceUrl && (
           <p className="mt-2 text-xs text-stone-400">
-            信息来源：
+            {t.sourcePrefix}
             {event.sourceName && (
               <span className="text-stone-500">{event.sourceName} · </span>
             )}
@@ -128,12 +133,12 @@ export default async function EventPage({
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-stone-700"
             >
-              {sourceHost(event.sourceUrl) || "查看原文"}
+              {sourceHost(event.sourceUrl) || t.viewOriginal}
             </a>
           </p>
         )}
         <div className="mt-5 rounded-2xl bg-stone-900 px-6 py-5 text-stone-50">
-          <p className="text-xs text-stone-400">一句话结论</p>
+          <p className="text-xs text-stone-400">{t.conclusionLabel}</p>
           <p className="mt-1.5 text-base font-medium leading-relaxed">
             {event.conclusion}
           </p>
@@ -141,65 +146,67 @@ export default async function EventPage({
       </header>
 
       <div className="mt-8">
-        <Block step={1} title="这件事发生了什么">
+        <Block step={1} title={t.blocks[0]}>
           <p className="text-[15px] leading-relaxed text-stone-700">{d.what}</p>
         </Block>
 
-        <Block step={2} title="为什么这件事重要">
+        <Block step={2} title={t.blocks[1]}>
           <p className="text-[15px] leading-relaxed text-stone-700">
             {d.whyImportant}
           </p>
         </Block>
 
-        <Block step={3} title="它通常会先影响什么">
+        <Block step={3} title={t.blocks[2]}>
           <p className="text-[15px] leading-relaxed text-stone-700">
             {d.firstImpact}
           </p>
         </Block>
 
-        <Block step={4} title="它会怎样一步步传导到普通人的生活">
+        <Block step={4} title={t.blocks[3]}>
           <ReasoningRoadmapSketch
             title={event.title}
             steps={d.transmissionPath}
             dimensions={event.dimensions}
+            lang={lang}
           />
         </Block>
 
-        <Block step={5} title="对年轻人的重点影响">
+        <Block step={5} title={t.blocks[4]}>
           <BulletList items={d.youngPeopleImpact} />
         </Block>
 
-        <Block step={6} title="短期更可能发生什么">
+        <Block step={6} title={t.blocks[5]}>
           <BulletList items={d.shortTerm} />
         </Block>
 
-        <Block step={7} title="中期需要留意什么">
+        <Block step={7} title={t.blocks[6]}>
           <BulletList items={d.midTerm} />
         </Block>
 
-        <Block step={8} title="哪些人更容易感受到影响">
+        <Block step={8} title={t.blocks[7]}>
           <BulletList items={d.mostAffected} />
         </Block>
 
-        <Block step={9} title="这不代表什么">
+        <Block step={9} title={t.blocks[8]}>
           <BulletList items={d.doesNotMean} />
         </Block>
 
-        <Block step={10} title="风险提示">
+        <Block step={10} title={t.blocks[9]}>
           <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[15px] leading-relaxed text-amber-800">
-            {RISK_NOTE}本网站仅用于信息理解与生活影响分析，不构成投资建议。投资需谨慎。
+            {riskNote}
+            {t.riskExtra}
           </p>
         </Block>
         </div>
       </div>
 
       <div className="mt-6 rounded-2xl border border-stone-200 bg-white p-5 text-center">
-        <p className="text-sm text-stone-600">想知道它具体会怎么影响你？</p>
+        <p className="text-sm text-stone-600">{t.ctaQuestion}</p>
         <Link
           href="/ask"
           className="mt-3 inline-block rounded-xl bg-stone-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition-colors hover:bg-stone-700"
         >
-          直接提问 →
+          {t.ctaButton}
         </Link>
       </div>
     </article>

@@ -8,25 +8,16 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import { SketchyBox } from "./SketchyBox";
 import type { LifeDimension } from "@/data/events";
-
-// 各生活维度在「最终落点」里的措辞
-const LANDING_LABEL: Record<LifeDimension, string> = {
-  找工作: "找工作",
-  工资收入: "工资收入",
-  租房成本: "租房成本",
-  日常消费: "日常消费",
-  存钱现金流: "存钱和现金流",
-  理财认知: "理财选择",
-};
+import { ui, LANDING_LABEL, type Lang } from "@/i18n/dict";
 
 // 根据事件实际涉及的生活维度，生成「最终落点」文案；不同事件不再千篇一律。
-function buildDestText(dimensions?: LifeDimension[]): string {
+function buildDestText(lang: Lang, dimensions?: LifeDimension[]): string {
+  const t = ui[lang].roadmap;
   const dims = (dimensions ?? []).filter((d) => LANDING_LABEL[d]);
-  if (dims.length === 0) {
-    return "最终一步步传导到你的日常生活";
-  }
-  const labels = dims.map((d) => LANDING_LABEL[d]);
-  return `最终更可能影响到你的${labels.join("、")}`;
+  if (dims.length === 0) return t.destFallback;
+  const sep = lang === "en" ? ", " : "、";
+  const labels = dims.map((d) => LANDING_LABEL[d][lang]).join(sep);
+  return t.destTemplate(labels);
 }
 
 // 当元素滚动进入视口时返回 true（只触发一次），用于驱动「逐环画出来」的入场动效。
@@ -60,7 +51,7 @@ interface FlowNode {
 }
 
 // 手绘向下箭头 + 「因此」标注
-function SketchyArrow() {
+function SketchyArrow({ label }: { label: string }) {
   const ref = useRef<SVGSVGElement>(null);
   useEffect(() => {
     const svg = ref.current;
@@ -80,7 +71,7 @@ function SketchyArrow() {
   return (
     <div className="flex items-center justify-center gap-2 py-1.5">
       <svg ref={ref} width={40} height={38} viewBox="0 0 40 38" aria-hidden />
-      <span className="font-sketch text-lg text-stone-500">因此……</span>
+      <span className="font-sketch text-lg text-stone-500">{label}</span>
     </div>
   );
 }
@@ -98,23 +89,26 @@ export function ReasoningRoadmapSketch({
   title,
   steps,
   dimensions,
+  lang = "zh",
 }: {
   title: string;
   steps: string[];
   /** 事件实际涉及的生活维度，用于生成「最终落点」文案 */
   dimensions?: LifeDimension[];
+  lang?: Lang;
 }) {
+  const t = ui[lang].roadmap;
   const nodes: FlowNode[] = [
-    { kind: "origin", badge: "起点", text: title },
+    { kind: "origin", badge: t.origin, text: title },
     ...steps.map((s, i) => ({
       kind: "step" as const,
-      badge: `第 ${i + 1} 环`,
+      badge: `${t.ringPrefix}${i + 1}${t.ringSuffix}`,
       text: s,
     })),
     {
       kind: "dest",
-      badge: "最终落点",
-      text: buildDestText(dimensions),
+      badge: t.destination,
+      text: buildDestText(lang, dimensions),
     },
   ];
 
@@ -128,7 +122,7 @@ export function ReasoningRoadmapSketch({
       }`}
     >
       <p className="font-sketch mb-4 text-center text-xl text-stone-500">
-        从事件出发，一环扣一环，看它如何一步步影响到你 ✎
+        {t.caption}
       </p>
       <div className="mx-auto flex max-w-md flex-col">
         {nodes.map((node, i) => {
@@ -148,9 +142,9 @@ export function ReasoningRoadmapSketch({
                   <div className="px-5 py-3.5">
                     <span className={`font-sketch text-base ${s.badge}`}>
                       {node.kind === "origin"
-                        ? "★ 起点"
+                        ? t.origin
                         : node.kind === "dest"
-                          ? "★ 最终落点"
+                          ? t.destination
                           : node.badge}
                     </span>
                     <p className="font-sketch mt-0.5 text-xl leading-snug text-stone-800">
@@ -164,7 +158,7 @@ export function ReasoningRoadmapSketch({
                   className="reveal-step"
                   style={{ transitionDelay: `calc(${delay} + 70ms)` }}
                 >
-                  <SketchyArrow />
+                  <SketchyArrow label={t.therefore} />
                 </div>
               )}
             </Fragment>
