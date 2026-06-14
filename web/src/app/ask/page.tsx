@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { answerQuestion } from "@/data/ask";
-import { answerQuestionSmart } from "@/data/ask-llm";
+import { Suspense } from "react";
 import { AskBox } from "@/components/AskBox";
-import { AnswerCard } from "@/components/AnswerCard";
+import { AnswerSection } from "@/components/AnswerSection";
+import { AnswerSkeleton } from "@/components/AnswerSkeleton";
 import { Disclaimer } from "@/components/Disclaimer";
-import { events } from "@/data/events";
 
 export const metadata: Metadata = {
   title: "直接提问 | 事件影响推演",
@@ -19,17 +17,6 @@ export default async function AskPage({
 }) {
   const { q } = await searchParams;
   const question = (q ?? "").trim();
-  // 混合匹配：优先用模型做语义匹配。
-  // - 模型匹配到事件 → 用该回答
-  // - 模型可用但判定无相关事件（no-match）→ 不降级，直接显示「无法识别」
-  // - 模型未配置 / 调用失败（unavailable）→ 降级到关键词匹配
-  let answer = null;
-  if (question) {
-    const smart = await answerQuestionSmart(question);
-    if (smart.kind === "answer") answer = smart.answer;
-    else if (smart.kind === "unavailable") answer = answerQuestion(question);
-    // no-match：answer 保持 null → 走下方「无法识别」空状态
-  }
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-10">
@@ -44,33 +31,15 @@ export default async function AskPage({
       </div>
 
       <div className="mt-8">
-        {question && answer && <AnswerCard answer={answer} />}
-
-        {question && !answer && (
-          <div className="rounded-2xl border border-stone-200 bg-white px-6 py-10 text-center">
-            <p className="text-3xl">🤔</p>
-            <p className="mt-3 font-medium">
-              暂时没识别出和「{question}」相关的事件
-            </p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-stone-500">
-              第一版基于一批结构化事件来回答。可以换个说法，
-              或者直接从下面这些最近事件里挑一个看完整推演。
-            </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              {events.slice(0, 4).map((e) => (
-                <Link
-                  key={e.slug}
-                  href={`/events/${e.slug}`}
-                  className="rounded-full border border-stone-300 px-3 py-1.5 text-sm text-stone-700 transition-colors hover:border-stone-900"
-                >
-                  {e.title}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {!question && (
+        {question ? (
+          // key={question}：换问题时强制重新 suspend，先显示骨架屏再流式切入结果
+          <Suspense
+            key={question}
+            fallback={<AnswerSkeleton question={question} />}
+          >
+            <AnswerSection question={question} />
+          </Suspense>
+        ) : (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white/50 px-6 py-10 text-center text-sm text-stone-500">
             在上面输入问题，或点一个示例问题试试。
           </div>

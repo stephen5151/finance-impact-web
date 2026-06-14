@@ -5,51 +5,65 @@ import { Disclaimer } from "@/components/Disclaimer";
 import { LatestNews } from "@/components/LatestNews";
 import { getNewsFeed } from "@/lib/news-store";
 import { getDisplayEvents } from "@/data/events-live";
+import { getLang } from "@/i18n/lang";
+import { ui } from "@/i18n/dict";
+import { localizeEvents, localizeNews, localizeRawNews } from "@/i18n/translate";
 
 // 每小时重新读取一次动态内容（实际更新频率由 cron 决定）
 export const revalidate = 3600;
 
 export default async function Home() {
+  const lang = await getLang();
+  const t = ui[lang].home;
   const feed = await getNewsFeed();
   const display = await getDisplayEvents();
+
+  const newsItems = await localizeNews(feed.items, lang);
+  const localizedDisplay =
+    display.kind === "full"
+      ? { ...display, events: await localizeEvents(display.events, lang) }
+      : display.kind === "raw"
+        ? { ...display, rawItems: await localizeRawNews(display.rawItems, lang) }
+        : display;
+  const dateLocale = lang === "en" ? "en-US" : "zh-CN";
 
   return (
     <div className="mx-auto max-w-5xl px-5">
       {/* Hero 区 */}
       <section className="pt-16 pb-10 text-center sm:pt-24">
         <p className="font-sketch mb-4 inline-block rounded-full border border-stone-200 bg-white px-3.5 py-1 text-base text-stone-500">
-          面向年轻人的事件影响解读 ✎
+          {t.heroBadge}
         </p>
         <h1 className="mx-auto max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl sm:leading-[1.15]">
-          看懂最近大事，
+          {t.heroTitleLine1}
           <br className="hidden sm:block" />
-          推演它会怎样
+          {t.heroTitleLine2}
+          {lang === "en" ? " " : ""}
           <span className="relative inline-block">
-            影响你的生活
+            {t.heroTitleUnderline}
             <span className="absolute -bottom-1.5 left-0 h-[3px] w-full rounded-full bg-stone-900" />
           </span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-stone-600 sm:text-lg">
-          不是教你炒股，而是帮你理解未来可能发生什么。
-          把复杂的政治经济事件，翻译成普通人能听懂的生活影响推演。
+          {t.heroSubtitle}
         </p>
       </section>
 
       {/* 风险提示条 */}
       <div className="mx-auto max-w-2xl">
-        <Disclaimer />
+        <Disclaimer lang={lang} />
       </div>
 
       {/* 提问框区 */}
       <section className="mx-auto mt-8 max-w-2xl">
         <h2 className="font-sketch mb-3 text-center text-xl text-stone-600">
-          直接问问：「这会对我有什么影响？」
+          {t.askHeading}
         </h2>
-        <AskBox />
+        <AskBox lang={lang} />
       </section>
 
       {/* 最新动态区（自动抓取，未配置或无数据时不渲染） */}
-      <LatestNews items={feed.items} updatedAt={feed.updatedAt} />
+      <LatestNews items={newsItems} updatedAt={feed.updatedAt} lang={lang} />
 
       {/* 最近事件区：只展示「有据可查、可追溯到来源网站」的真实事件 */}
       <section id="events" className="mt-20 scroll-mt-20">
