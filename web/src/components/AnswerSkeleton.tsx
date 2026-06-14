@@ -1,7 +1,16 @@
+import { ui, type Lang } from "@/i18n/dict";
+
 /** 「看影响」提交后立刻显示的占位骨架卡。
  * 作用是给用户即时反馈——结果正在这个位置生成，避免「点完没反应」。
  * 结构上刻意呼应 AnswerCard：深色顶部 + 若干分区，让真结果切入时不跳动。 */
-export function AnswerSkeleton({ question }: { question?: string }) {
+export function AnswerSkeleton({
+  question,
+  lang = "zh",
+}: {
+  question?: string;
+  lang?: Lang;
+}) {
+  const t = ui[lang];
   return (
     <div
       className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
@@ -11,11 +20,15 @@ export function AnswerSkeleton({ question }: { question?: string }) {
       {/* 顶部深色区：回声标题 + 正在分析的状态行 */}
       <div className="bg-stone-900 px-6 py-6 text-stone-50">
         {question && (
-          <p className="text-xs text-stone-400">关于「{question}」</p>
+          <p className="text-xs text-stone-400">
+            {t.answer.about}
+            {question}
+            {t.answer.aboutClose}
+          </p>
         )}
         <div className="mt-3 flex items-center gap-2 text-sm text-stone-300">
           <Spinner />
-          <span>正在按你的生活维度推演影响…</span>
+          <span>{t.ask.thinking}</span>
         </div>
         <div className="mt-4 space-y-2">
           <Bar className="w-11/12 bg-stone-700" />

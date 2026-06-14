@@ -18,6 +18,11 @@ import {
   RISK_NOTE,
 } from "./events";
 import { AskAnswer } from "./ask";
+import type { Lang } from "@/i18n/dict";
+
+// 风险提示的英文版（问答卡在英文模式下直接用，避免再翻译一遍 RISK_NOTE）。
+const RISK_NOTE_EN =
+  "The above is a life-impact explanation based on public events, not a guarantee about the future. The impact differs by industry, region, and income situation. Short-term market swings don’t mean everyday life will change immediately.";
 
 const ALL_DIMENSIONS: LifeDimension[] = [
   "找工作",
@@ -76,7 +81,7 @@ async function getEventCatalog(): Promise<FinanceEvent[]> {
   return staticEvents;
 }
 
-function buildSystemPrompt(catalog: FinanceEvent[]): string {
+function buildSystemPrompt(catalog: FinanceEvent[], lang: Lang): string {
   const list = catalog
     .map((e) =>
       [
@@ -116,6 +121,13 @@ function buildSystemPrompt(catalog: FinanceEvent[]): string {
     "",
     `生活维度只能从这里选：${ALL_DIMENSIONS.join("、")}`,
     "",
+    lang === "en"
+      ? [
+          "OUTPUT LANGUAGE: Write every free-text string value (directAnswer, path, byDimension.text, whoAffected, signals) in natural English.",
+          `EXCEPTION: the dimension values (the \"dimensions\" array and each byDimension.dimension) MUST stay exactly as the given Chinese tokens (${ALL_DIMENSIONS.join("、")}) — they are stable keys, not display text. Do not translate them.`,
+        ].join("\n")
+      : "用中文输出所有文本字段。",
+    "",
     "只输出 JSON，结构：",
     JSON.stringify({
       topical: true,
@@ -134,6 +146,7 @@ function buildSystemPrompt(catalog: FinanceEvent[]): string {
 /** 直接提问入口：模型基于真实事件生成定制回答。 */
 export async function answerQuestionSmart(
   question: string,
+  lang: Lang = "zh",
 ): Promise<SmartResult> {
   if (!isLLMConfigured()) return { kind: "unavailable" };
   const q = question.trim();
@@ -145,7 +158,7 @@ export async function answerQuestionSmart(
   let gen: GeneratedAnswer;
   try {
     gen = await chatJSON<GeneratedAnswer>({
-      system: buildSystemPrompt(catalog),
+      system: buildSystemPrompt(catalog, lang),
       user: q,
       // 温度 0：同一问题每次结果一致，避免多点几次出现不同答案。
       temperature: 0,
@@ -198,7 +211,7 @@ export async function answerQuestionSmart(
     byDimension,
     whoAffected: strArr(gen.whoAffected, 4),
     signals: strArr(gen.signals, 4),
-    riskNote: RISK_NOTE,
+    riskNote: lang === "en" ? RISK_NOTE_EN : RISK_NOTE,
     grounded,
   };
   return { kind: "answer", answer };

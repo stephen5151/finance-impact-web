@@ -110,6 +110,7 @@ type Dict = {
     placeholder: string;
     submit: string;
     analyzing: string;
+    thinking: string;
     samples: string[];
     noMatchTitlePre: string; // before quoted question
     noMatchTitlePost: string;
@@ -223,6 +224,7 @@ export const ui: Record<Lang, Dict> = {
       placeholder: "例如：美联储加息会影响我找工作吗",
       submit: "看影响",
       analyzing: "分析中…",
+      thinking: "正在按你的生活维度推演影响…",
       samples: [
         "美联储加息会影响我找工作吗",
         "油价上涨会让我生活更难吗",
@@ -361,6 +363,7 @@ export const ui: Record<Lang, Dict> = {
       placeholder: "e.g. Will Fed rate hikes affect my job search?",
       submit: "See impact",
       analyzing: "Analyzing…",
+      thinking: "Reasoning through the impact on your life…",
       samples: [
         "Will Fed rate hikes affect my job search?",
         "Will rising oil prices make life harder?",

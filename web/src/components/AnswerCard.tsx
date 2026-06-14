@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AskAnswer } from "@/data/ask";
 import { PathFlow } from "./PathFlow";
+import { ui, dimLabel, type Lang } from "@/i18n/dict";
 
 function Section({
   title,
@@ -19,12 +20,23 @@ function Section({
   );
 }
 
-export function AnswerCard({ answer }: { answer: AskAnswer }) {
+export function AnswerCard({
+  answer,
+  lang = "zh",
+}: {
+  answer: AskAnswer;
+  lang?: Lang;
+}) {
+  const t = ui[lang].answer;
   return (
     <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
       {/* 直接回答 */}
       <div className="bg-stone-900 px-6 py-6 text-stone-50">
-        <p className="text-xs text-stone-400">关于「{answer.question}」</p>
+        <p className="text-xs text-stone-400">
+          {t.about}
+          {answer.question}
+          {t.aboutClose}
+        </p>
         <p className="mt-2 text-lg font-medium leading-relaxed">
           {answer.directAnswer}
         </p>
@@ -34,23 +46,23 @@ export function AnswerCard({ answer }: { answer: AskAnswer }) {
               key={d}
               className="rounded-full bg-stone-700 px-2.5 py-1 text-xs"
             >
-              {d}
+              {dimLabel(d, lang)}
             </span>
           ))}
         </div>
         {answer.grounded === false && (
           <p className="mt-3 rounded-lg bg-stone-800 px-3 py-2 text-xs leading-relaxed text-stone-300">
-            ⚠️ 本回答基于一般经济常识推演，未对应当前可追溯的具体新闻事件，仅供理解参考。
+            {t.groundedWarn}
           </p>
         )}
       </div>
 
-      <Section title="影响路径">
+      <Section title={t.secPath}>
         <PathFlow steps={answer.path} />
       </Section>
 
       {answer.byDimension.length > 0 && (
-        <Section title="按生活维度展开">
+        <Section title={t.secByDimension}>
           <div className="grid gap-2.5">
             {answer.byDimension.map((b) => (
               <div
@@ -60,7 +72,7 @@ export function AnswerCard({ answer }: { answer: AskAnswer }) {
                 <div className="flex items-center gap-2">
                   <span className="h-3.5 w-1 rounded-full bg-stone-900" />
                   <span className="text-sm font-semibold tracking-tight text-stone-900">
-                    {b.dimension}
+                    {dimLabel(b.dimension, lang)}
                   </span>
                 </div>
                 <p className="mt-1.5 text-sm leading-relaxed text-stone-600">
@@ -72,7 +84,7 @@ export function AnswerCard({ answer }: { answer: AskAnswer }) {
         </Section>
       )}
 
-      <Section title="哪类年轻人更受影响">
+      <Section title={t.secWho}>
         <ul className="space-y-1.5">
           {answer.whoAffected.map((w) => (
             <li
@@ -85,7 +97,7 @@ export function AnswerCard({ answer }: { answer: AskAnswer }) {
         </ul>
       </Section>
 
-      <Section title="当前更值得关注的信号">
+      <Section title={t.secSignals}>
         <ul className="space-y-1.5">
           {answer.signals.map((s) => (
             <li
@@ -98,14 +110,14 @@ export function AnswerCard({ answer }: { answer: AskAnswer }) {
         </ul>
       </Section>
 
-      <Section title="风险提示">
+      <Section title={t.secRisk}>
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-800">
           {answer.riskNote}
         </p>
       </Section>
 
       {answer.matchedEvents.length > 0 && (
-        <Section title="想看完整推演">
+        <Section title={t.secMore}>
           <div className="flex flex-wrap gap-2">
             {answer.matchedEvents.map((e) => (
               <Link

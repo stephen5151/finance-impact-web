@@ -4,6 +4,9 @@ import type { Metadata } from "next";
 import { RISK_NOTE } from "@/data/events";
 import { getDisplayEvent } from "@/data/events-live";
 import { ReasoningRoadmapSketch } from "@/components/ReasoningRoadmapSketch";
+import { getLang } from "@/i18n/lang";
+import { ui, dirLabel } from "@/i18n/dict";
+import { localizeEvent, translateBatch } from "@/i18n/translate";
 
 // 从原文链接取出来源网站域名（去掉 www.），用于在页首标明信息来源的网站地址。
 function sourceHost(url?: string): string {
@@ -26,10 +29,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const event = await getDisplayEvent(slug);
-  if (!event) return { title: "事件未找到" };
+  const lang = await getLang();
+  const raw = await getDisplayEvent(slug);
+  if (!raw) return { title: ui[lang].event.notFound };
+  const event = await localizeEvent(raw, lang);
+  const brand = ui[lang].header.brand;
   return {
-    title: `${event.title} | 事件影响推演`,
+    title: `${event.title} | ${brand}`,
     description: event.summary,
   };
 }
